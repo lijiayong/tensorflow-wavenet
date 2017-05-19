@@ -128,7 +128,7 @@ def create_seed(filename,
                 silence_threshold=SILENCE_THRESHOLD,
                 cut = True):
     audio, _ = librosa.load(filename, sr=sample_rate, mono=True)
-    audio = audio_reader.trim_silence(audio, silence_threshold)
+    # audio = audio_reader.trim_silence(audio, silence_threshold)
 
     quantized = mu_law_encode(audio, quantization_channels)
     if cut:
@@ -196,8 +196,10 @@ def main():
         seed = create_seed(args.wav_replicate,
                            wavenet_params['sample_rate'],
                            quantization_channels,
-                           net.receptive_field)
-        waveform = sess.run(seed).tolist()
+                           net.receptive_field,
+                           cut = False)
+        orig_waveform = sess.run(seed).tolist()
+        waveform = []
     else:
         # Silence with a single random sample at the end.
         waveform = [quantization_channels / 2] * (net.receptive_field - 1)
@@ -221,17 +223,28 @@ def main():
         print('Done.')
 
     last_sample_timestamp = datetime.now()
-    for step in range(args.samples):
-        if args.fast_generation:
+    for step in range(min(args.samples, len(orig_waveform)-net.receptive_field+1)):
+        if args.wav_replicate:
+            # if net.receptive_field < step:
+            #     window = orig_waveform[:step]
+            # else:
+            #     window = orig_waveform[step - net.receptive_field:step]
+            # print("receptive_field = {}".format(net.receptive_field))
+            # print("length = {}".format(len(orig_waveform)))
+            window = orig_waveform[step:step + net.receptive_field]
             outputs = [next_sample]
-            outputs.extend(net.push_ops)
-            window = waveform[-1]
         else:
-            if len(waveform) > net.receptive_field:
-                window = waveform[-net.receptive_field:]
+            if args.fast_generation:
+                outputs = [next_sample]
+                outputs.extend(net.push_ops)
+                window = waveform[-1]
             else:
-                window = waveform
-            outputs = [next_sample]
+                if len(waveform) > net.receptive_field:
+                    window = waveform[-net.receptive_field:]
+                else:
+                    window = waveform
+                # print("waveform_length = {}".format(len(waveform)))
+                outputs = [next_sample]
 
         # Run the WaveNet to predict the next sample.
         prediction = sess.run(outputs, feed_dict={samples: window})[0]

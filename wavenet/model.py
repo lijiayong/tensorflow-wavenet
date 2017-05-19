@@ -306,7 +306,12 @@ class WaveNetModel(object):
             out, weights_dense, stride=1, padding="SAME", name="dense")
 
         # The 1x1 conv to produce the skip output
+        # my_shape = tf.Print(tf.shape(out), [tf.shape(out)], message = "shape = ")
+        # output_width = tf.Print(output_width, [output_width], message = "output_width = ")
         skip_cut = tf.shape(out)[1] - output_width
+        # skip_cut = my_shape[1] - output_width
+         
+        # skip_cut = tf.Print(skip_cut, [skip_cut], message = "skip_cut = ")
         out_skip = tf.slice(out, [0, skip_cut, 0], [-1, -1, -1])
         weights_skip = variables['skip']
         skip_contribution = tf.nn.conv1d(
@@ -405,6 +410,7 @@ class WaveNetModel(object):
 
         current_layer = self._create_causal_layer(current_layer)
 
+        input_batch = tf.Print(input_batch, [tf.shape(input_batch)], message = "input_batch_shape = ")
         output_width = tf.shape(input_batch)[1] - self.receptive_field + 1
 
         # Add all defined dilation layers.
@@ -584,10 +590,13 @@ class WaveNetModel(object):
 
             gc_embedding = self._embed_gc(global_condition)
             raw_output = self._create_network(encoded, gc_embedding)
+            raw_output = tf.Print(raw_output, [tf.shape(raw_output)], message = "raw_out_shape = ")
             out = tf.reshape(raw_output, [-1, self.quantization_channels])
             # Cast to float64 to avoid bug in TensorFlow
+            out = tf.Print(out, [tf.shape(out)], message = "out_shape = ")
             proba = tf.cast(
                 tf.nn.softmax(tf.cast(out, tf.float64)), tf.float32)
+            proba = tf.Print(proba, [tf.shape(proba)], message = "proba_shape = ")
             last = tf.slice(
                 proba,
                 [tf.shape(proba)[0] - 1, 0],
