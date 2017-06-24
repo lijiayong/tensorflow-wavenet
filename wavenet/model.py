@@ -306,8 +306,8 @@ class WaveNetModel(object):
             out, weights_dense, stride=1, padding="SAME", name="dense")
 
         # The 1x1 conv to produce the skip output
-        # my_shape = tf.Print(tf.shape(out), [tf.shape(out)], message = "shape = ")
-        # output_width = tf.Print(output_width, [output_width], message = "output_width = ")
+        my_shape = tf.Print(tf.shape(out), [tf.shape(out)], message = "shape = ")
+        output_width = tf.Print(output_width, [output_width], message = "output_width = ")
         skip_cut = tf.shape(out)[1] - output_width
         # skip_cut = my_shape[1] - output_width
          
