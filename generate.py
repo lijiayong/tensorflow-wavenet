@@ -139,7 +139,12 @@ def main():
     with open(args.wavenet_params, 'r') as config_file:
         wavenet_params = json.load(config_file)
 
-    sess = tf.Session()
+    # Run only one thread
+    session_conf = tf.ConfigProto(
+        intra_op_parallelism_threads=1,
+        inter_op_parallelism_threads=1)
+    sess = tf.Session(config=session_conf)
+    # sess = tf.Session()
 
     net = WaveNetModel(
         batch_size=1,

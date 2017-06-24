@@ -273,7 +273,10 @@ class WaveNetModel(object):
         variables = self.variables['dilated_stack'][layer_index]
 
         weights_filter = variables['filter']
+        weights_filter = tf.Print(weights_filter, [layer_index], message = "layer_index = ")
+        weights_filter = tf.Print(weights_filter, [tf.shape(weights_filter)], message = "weights_filter = ")
         weights_gate = variables['gate']
+        weights_gate = tf.Print(weights_gate, [tf.shape(weights_gate)], message = "weights_gate = ")
 
         conv_filter = causal_conv(input_batch, weights_filter, dilation)
         conv_gate = causal_conv(input_batch, weights_gate, dilation)
@@ -306,7 +309,7 @@ class WaveNetModel(object):
             out, weights_dense, stride=1, padding="SAME", name="dense")
 
         # The 1x1 conv to produce the skip output
-        my_shape = tf.Print(tf.shape(out), [tf.shape(out)], message = "shape = ")
+        my_shape = tf.Print(tf.shape(out), [layer_index, tf.shape(out)], message = "index, shape = ")
         output_width = tf.Print(output_width, [output_width], message = "output_width = ")
         # skip_cut = tf.shape(out)[1] - output_width
         skip_cut = my_shape[1] - output_width
