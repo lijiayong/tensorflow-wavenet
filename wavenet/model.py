@@ -308,8 +308,8 @@ class WaveNetModel(object):
         # The 1x1 conv to produce the skip output
         my_shape = tf.Print(tf.shape(out), [tf.shape(out)], message = "shape = ")
         output_width = tf.Print(output_width, [output_width], message = "output_width = ")
-        skip_cut = tf.shape(out)[1] - output_width
-        # skip_cut = my_shape[1] - output_width
+        # skip_cut = tf.shape(out)[1] - output_width
+        skip_cut = my_shape[1] - output_width
          
         # skip_cut = tf.Print(skip_cut, [skip_cut], message = "skip_cut = ")
         out_skip = tf.slice(out, [0, skip_cut, 0], [-1, -1, -1])
